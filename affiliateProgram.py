@@ -1,41 +1,30 @@
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-from dash.dependencies import Input, Output
+import streamlit as st
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
 
-app = dash.Dash(__name__)
+# Set the title
+st.title("Sales Pipeline Forecast Model: Affiliate Program")
+# Sidebar inputs
+st.sidebar.header("Enter Parameters")
+your_plan = st.sidebar.number_input("Your Plan", value=2500)
+average_plan_referrals = st.sidebar.number_input("Average Plan Referrals", value=2500)
+referral_payout_percent = st.sidebar.slider("Referral Payout Percentage", min_value=0.0, max_value=1.0, value=0.1)
+sales_conversion_rate = st.sidebar.slider("Sales Conversion Rate", min_value=0.0, max_value=1.0, value=0.4)
+response_rate = st.sidebar.slider("Response Rate", min_value=0.0, max_value=1.0, value=0.6)
 
-app.layout = html.Div([
-    html.Label("Your Plan:"),
-    dcc.Input(id="your-plan", type="number", value=2500),
-    html.Label("Average Plan Referral:"),
-    dcc.Input(id="avg-plan-ref", type="number", value=2500),
-    html.Label("Referral Payout Percentage:"),
-    dcc.Input(id="ref-payout-perc", type="number", value=0.1),
-    html.Label("Sales Conversion Rate:"),
-    dcc.Input(id="sales-conv-rate", type="number", value=0.4),
-    html.Label("Response Rate:"),
-    dcc.Input(id="response-rate", type="number", value=0.6),
-    html.Div(id="output")
-])
+# Calculate metrics
+payout = referral_payout_percent * average_plan_referrals
+referrals_needed_to_break_even = your_plan / payout
+conversions_needed = referrals_needed_to_break_even / sales_conversion_rate
+touch_points_needed = conversions_needed / response_rate
 
-@app.callback(
-    Output("output", "children"),
-    [
-        Input("your-plan", "value"),
-        Input("avg-plan-ref", "value"),
-        Input("ref-payout-perc", "value"),
-        Input("sales-conv-rate", "value"),
-        Input("response-rate", "value")
-    ]
-)
-def calculate_values(your_plan, avg_plan_ref, ref_payout_perc, sales_conv_rate, response_rate):
-    payout = ref_payout_perc * avg_plan_ref
-    referrals_needed_to_be = your_plan / payout
-    conversions_needed = referrals_needed_to_be / sales_conv_rate
-    touch_points_needed = conversions_needed / response_rate
+# Display results
+st.write("Payout: ", payout)
+st.write("Referrals Needed to Break Even: ", referrals_needed_to_break_even)
+st.write("Conversions Needed: ", conversions_needed)
+st.write("Touch Points Needed: ", touch_points_needed)
 
-    return f"Touch Points Needed: {touch_points_needed}"
 
-if __name__ == "__main__":
-    app.run_server(debug=True)
+
+
